@@ -161,3 +161,7 @@ cython_debug/
 
 # pytorch models
 *.pkl
+
+# input and output files
+input
+output
