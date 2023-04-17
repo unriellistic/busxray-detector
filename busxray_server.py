@@ -24,14 +24,17 @@ async def upload(request):
     if Path(img.name).suffix not in ('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'):
         raise SanicException("Invalid file type. Accepted file types are: .png, .jpg, .jpeg, .tiff, .bmp, .gif", status_code=415)
     
+    # save the image to disk
     img_path = Path("input") / img.name
     async with aiofiles.open(img_path, "wb") as f:
         await f.write(img.body)
     
+    # run AI prediction
     logger.info("Processing image " + str(img_path))
     img_cv2 = cv2.imread(str(img_path))
     predictions = predictor(img_cv2) # should be COCO format (json compatible)
 
+    # save the prediction to json file
     output_path = Path("output") / Path(img.name).with_suffix(".json")
     with open(output_path, "wb") as f:
         f.write(orjson.dumps(predictions, option=orjson.OPT_INDENT_2))
