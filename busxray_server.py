@@ -16,6 +16,7 @@ predictor = TridentNetPredictor(config_file="models/tridentnet_fast_R_50_C4_3x.y
 )
 
 app = Sanic("busxray_detector")
+app.update_config("./sanic_config.py")
 
 @app.post("/")
 async def upload(request):
@@ -25,7 +26,7 @@ async def upload(request):
         raise SanicException("Invalid file type. Accepted file types are: .png, .jpg, .jpeg, .tiff, .bmp, .gif", status_code=415)
     
     # save the image to disk
-    img_path = Path("input") / img.name
+    img_path = Path(app.config.INPUT_FOLDER) / img.name
     async with aiofiles.open(img_path, "wb") as f:
         await f.write(img.body)
     
@@ -35,7 +36,7 @@ async def upload(request):
     predictions = predictor(img_cv2) # should be COCO format (json compatible)
 
     # save the prediction to json file
-    output_path = Path("output") / Path(img.name).with_suffix(".json")
+    output_path = Path(app.config.OUTPUT_FOLDER) / Path(img.name).with_suffix(".json")
     with open(output_path, "wb") as f:
         f.write(orjson.dumps(predictions, option=orjson.OPT_INDENT_2))
     logger.info("...done.")
