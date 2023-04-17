@@ -6,8 +6,6 @@ import cv2, orjson
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileCreatedEvent, FileModifiedEvent, FileMovedEvent
 
-from utils import parse_inference
-
 class BusxrayEventHandler(FileSystemEventHandler):
     '''
     Event handler for the busxray system.
