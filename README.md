@@ -7,11 +7,14 @@ Model weights can be downloaded from [detectron2's TridentNet page](https://gith
 
 ```
 $ pip install -r requirements.txt
-$ python main.py
+$ sanic busxray_server (for the server)
+$ python busxray_client.py [--source /path/to/folder] [--url TARGET_URL] (for the client)
 ```
+
+Server configuration (input and output folders) can be found in sanic_config.py. Client configuration (folder to watch and target URL) can be set via command line arguments.
 
 note: `Ikomia-dev/detectron2@v0.6-win10` is used instead of the official detectron2 repository, due to a bug that causes detectron2 installation to fail on Windows.
 
 
 ## Customizing the predictor
-The predictor can be any `Callable`. It must take an OpenCV-format image as input, and output JSON-compatible predictions.
+The predictor can be any `Callable`. It must take an OpenCV-format image as input, and output COCO format (JSON-compatible) predictions.
