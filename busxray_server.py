@@ -1,10 +1,11 @@
-import aiofiles
+import aiofiles, time
 from pathlib import Path
 
 import cv2, orjson
-from sanic import Sanic, response
+from sanic import Sanic
 from sanic.exceptions import SanicException
 from sanic.log import logger
+from sanic.response import json
 from sanic.worker.loader import AppLoader
 
 from tridentnet_predictor import TridentNetPredictor
@@ -15,7 +16,7 @@ predictor = TridentNetPredictor(config_file="models/tridentnet_fast_R_50_C4_3x.y
     opts=["MODEL.WEIGHTS", "models/model_final_e1027c.pkl"]
 )
 
-app = Sanic("busxray_detector")
+app = Sanic("busxray_detector", dumps=orjson.dumps)
 app.update_config("./sanic_config.py")
 
 @app.post("/")
@@ -32,13 +33,14 @@ async def upload(request):
     
     # run AI prediction
     logger.info("Processing image " + str(img_path))
+    start_time = time.perf_counter()
     img_cv2 = cv2.imread(str(img_path))
     predictions = predictor(img_cv2) # should be COCO format (json compatible)
 
-    # save the prediction to json file
-    output_path = Path(app.config.OUTPUT_FOLDER) / Path(img.name).with_suffix(".json")
-    with open(output_path, "wb") as f:
-        f.write(orjson.dumps(predictions, option=orjson.OPT_INDENT_2))
-    logger.info("...done.")
+    # save the prediction to json file (not needed as this is done on client side)
+    # output_path = Path(app.config.OUTPUT_FOLDER) / Path(img.name).with_suffix(".json")
+    # with open(output_path, "wb") as f:
+    #     f.write(orjson.dumps(predictions, option=orjson.OPT_INDENT_2))
+    logger.info(f"...done. ({(time.perf_counter() - start_time):.3f} s)")
 
-    return response.json(True)
+    return json(predictions)
